@@ -17,6 +17,9 @@
           <action android:name="android.intent.action.DEFAULT"/>
         </intent-filter>
       </activity>
+      <application>
+        <meta-data android:name="com.google.android.gms.wallet.api.enabled" android:value="true" />
+      </application>
     </config-file>
     <source-file src="src/android/StripeUIPlugin.java" target-dir="src/cordova/plugin/stripeuiplugin" />
     <source-file src="src/android/CheckoutActivity.java" target-dir="src/cordova/plugin/stripeuiplugin" />

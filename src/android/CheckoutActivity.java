@@ -36,7 +36,13 @@ public class CheckoutActivity extends AppCompatActivity {
             PaymentSheet paymentSheet = new PaymentSheet(this, result -> {
                 onPaymentSheetResult(result);
             });
-            paymentSheet.presentWithPaymentIntent(paymentIntent, new PaymentSheet.Configuration(companyName, new PaymentSheet.CustomerConfiguration(customer, ephemeralKey)));
+
+            PaymentSheet.Configuration configuration = new PaymentSheet.Configuration(companyName);
+            configuration.setCustomer(new PaymentSheet.CustomerConfiguration(customer, ephemeralKey));
+            configuration.setGooglePay(new PaymentSheet.GooglePayConfiguration(PaymentSheet.GooglePayConfiguration.Environment.Test, "AU"));
+
+            paymentSheet.presentWithPaymentIntent(paymentIntent, configuration);
+
         } catch (Exception e) {
             resultMap.put("code", "2");
             resultMap.put("message", "PAYMENT_FAILED");
