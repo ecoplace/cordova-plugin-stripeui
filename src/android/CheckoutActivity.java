@@ -11,6 +11,7 @@ import com.stripe.android.paymentsheet.PaymentSheet;
 import com.stripe.android.paymentsheet.PaymentSheetResult;
 
 import java.util.HashMap;
+import org.json.JSONArray;
 
 public class CheckoutActivity extends AppCompatActivity {
     Intent resultIntent = new Intent();
@@ -26,12 +27,14 @@ public class CheckoutActivity extends AppCompatActivity {
         String paymentIntent = receivedIntent.getStringExtra("paymentIntent");
         String customer = receivedIntent.getStringExtra("customer");
         String ephemeralKey = receivedIntent.getStringExtra("ephemeralKey");
+        String billingAddressStr = receivedIntent.getStringExtra("billingAddress");
         try {
             assert publishableKey != null;
             assert paymentIntent != null;
             assert companyName != null;
             assert customer != null;
             assert ephemeralKey != null;
+            JSONArray billingAddress = new JSONArray(billingAddressStr);
             PaymentConfiguration.init(this, publishableKey);
             PaymentSheet paymentSheet = new PaymentSheet(this, result -> {
                 onPaymentSheetResult(result);
@@ -40,6 +43,7 @@ public class CheckoutActivity extends AppCompatActivity {
             PaymentSheet.Configuration configuration = new PaymentSheet.Configuration(companyName);
             configuration.setCustomer(new PaymentSheet.CustomerConfiguration(customer, ephemeralKey));
             configuration.setGooglePay(new PaymentSheet.GooglePayConfiguration(PaymentSheet.GooglePayConfiguration.Environment.Test, "AU"));
+            configuration.setDefaultBillingDetails(new PaymentSheet.BillingDetails(null,"testguy@hotmail.com","Test guyname","04123123123"));
 
             paymentSheet.presentWithPaymentIntent(paymentIntent, configuration);
 
