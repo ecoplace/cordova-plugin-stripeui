@@ -11,7 +11,7 @@ import com.stripe.android.paymentsheet.PaymentSheet;
 import com.stripe.android.paymentsheet.PaymentSheetResult;
 
 import java.util.HashMap;
-import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class CheckoutActivity extends AppCompatActivity {
     Intent resultIntent = new Intent();
@@ -27,23 +27,40 @@ public class CheckoutActivity extends AppCompatActivity {
         String paymentIntent = receivedIntent.getStringExtra("paymentIntent");
         String customer = receivedIntent.getStringExtra("customer");
         String ephemeralKey = receivedIntent.getStringExtra("ephemeralKey");
+        String appleMerchantCountryCode = receivedIntent.getStringExtra("appleMerchantCountryCode");
         String billingAddressStr = receivedIntent.getStringExtra("billingAddress");
+
         try {
             assert publishableKey != null;
             assert paymentIntent != null;
             assert companyName != null;
             assert customer != null;
             assert ephemeralKey != null;
-            JSONArray billingAddress = new JSONArray(billingAddressStr);
+            assert appleMerchantCountryCode != null;
+
             PaymentConfiguration.init(this, publishableKey);
             PaymentSheet paymentSheet = new PaymentSheet(this, result -> {
                 onPaymentSheetResult(result);
             });
 
-            PaymentSheet.Configuration configuration = new PaymentSheet.Configuration(companyName);
-            configuration.setCustomer(new PaymentSheet.CustomerConfiguration(customer, ephemeralKey));
-            configuration.setGooglePay(new PaymentSheet.GooglePayConfiguration(PaymentSheet.GooglePayConfiguration.Environment.Test, "AU"));
-            configuration.setDefaultBillingDetails(new PaymentSheet.BillingDetails(null,"testguy@hotmail.com","Test guyname","04123123123"));
+
+            JSONObject billingAddressDetails = new JSONObject(billingAddressStr);
+            String billingEmail = billingAddressDetails.getString("email");
+            String billingName = billingAddressDetails.getString("name");
+            String billingPhone = billingAddressDetails.getString("phone");
+            String billingLine1 = billingAddressDetails.getString("line1");
+            String billingLine2 = null;
+            String billingCity = billingAddressDetails.getString("city");
+            String billingState = billingAddressDetails.getString("state");
+            String billingPostalCode = billingAddressDetails.getString("postalCode");
+            String billingCountry = billingAddressDetails.getString("country");
+
+            PaymentSheet.Address billingAddress = new PaymentSheet.Address(billingCity, billingCountry, billingLine1, billingLine2, billingPostalCode, billingState);
+            PaymentSheet.BillingDetails billingDetails = new PaymentSheet.BillingDetails(billingAddress,billingEmail,billingName,billingPhone);
+            PaymentSheet.CustomerConfiguration customerConfig = new PaymentSheet.CustomerConfiguration(customer, ephemeralKey);
+            PaymentSheet.GooglePayConfiguration googlePayConfig = new PaymentSheet.GooglePayConfiguration(PaymentSheet.GooglePayConfiguration.Environment.Production, appleMerchantCountryCode);
+
+            PaymentSheet.Configuration configuration = new PaymentSheet.Configuration(companyName, customerConfig, googlePayConfig, null, billingDetails);
 
             paymentSheet.presentWithPaymentIntent(paymentIntent, configuration);
 
